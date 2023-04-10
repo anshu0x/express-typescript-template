@@ -1,10 +1,16 @@
 {
   "compilerOptions": {
     "target": "es6",
-    "module": "es6",
+    "module": "nodenext",
     "rootDir": "./",
     "outDir": "./build",
+    "strict": true,
+    "lib": ["esnext"],
     "esModuleInterop": true,
-    "strict": true
+    "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@prisma/client": ["node_modules/@prisma/client"]
+    }
   }
 }
