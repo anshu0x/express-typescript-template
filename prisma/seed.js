@@ -1,31 +1,51 @@
 import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
-
-(async function main() {
-  try {
-    const martinFowler = await prisma.author.upsert({
-      where: { name: 'Martin Fowler' },
-      update: {},
-      create: {
-        name: 'Martin Fowler',
-        Quotes: {
-          create: [
-            {
-              quote: 'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
-            },
-            {
-              quote: `I'm not a great programmer; I'm just a good programmer with great habits.`,
-            },
-          ],
+async function main() {
+  const alice = await prisma.user.upsert({
+    where: { email: "alice@prisma.io" },
+    update: {},
+    create: {
+      email: "alice@prisma.io",
+      name: "Alice",
+      posts: {
+        create: {
+          title: "Check out Prisma with Next.js",
+          content: "https://www.prisma.io/nextjs",
+          published: true,
         },
       },
-    });
-
-    console.log('Create 1 author with 2 quotes: ', martinFowler);
-  } catch(e) {
-    console.error(e);
-    process.exit(1);
-  } finally {
+    },
+  });
+  const bob = await prisma.user.upsert({
+    where: { email: "bob@prisma.io" },
+    update: {},
+    create: {
+      email: "bob@prisma.io",
+      name: "Bob",
+      posts: {
+        create: [
+          {
+            title: "Follow Prisma on Twitter",
+            content: "https://twitter.com/prisma",
+            published: true,
+          },
+          {
+            title: "Follow Nexus on Twitter",
+            content: "https://twitter.com/nexusgql",
+            published: true,
+          },
+        ],
+      },
+    },
+  });
+  console.log({ alice, bob });
+}
+main()
+  .then(async () => {
     await prisma.$disconnect();
-  }
-})();
+  })
+  .catch(async (e) => {
+    console.error(e);
+    await prisma.$disconnect();
+    process.exit(1);
+  });

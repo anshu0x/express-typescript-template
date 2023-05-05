@@ -11,65 +11,41 @@ import express from "express";
 const app = express();
 const port = process.env.PORT || 3000;
 import { PrismaClient } from "@prisma/client";
+import cors from "cors";
 const prisma = new PrismaClient();
+app.use(cors());
 app.use(express.json());
-app.get("/", (req, res) => {
-    res.send("Express + TypeScript Server");
-});
-app.get("/quotes", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const currentPage = req.query.page || 1;
-    const listPerPage = 5;
-    const offset = (Number(currentPage) - 1) * listPerPage;
-    const allQuotes = yield prisma.quote.findMany({
-        include: { author: true },
-        skip: offset,
-        take: listPerPage,
-    });
-    res.json({
-        data: allQuotes,
-        meta: { page: currentPage },
-    });
+app.get("/", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const data = yield prisma.user.findMany();
+    console.log(data);
+    res.json(data);
 }));
-app.post('/quotes', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const authorName = req.body.author;
-    const quote = {
-        quote: req.body.quote
-    };
-    if (!authorName || !quote.quote) {
-        return res.status(400).json({ message: 'Either quote or author is missing' });
-    }
-    try {
-        const message = 'quote created successfully';
-        const author = yield prisma.author.findFirst({
-            where: { name: authorName }
-        });
-        if (!author) {
-            yield prisma.author.create({
-                data: {
-                    'name': authorName,
-                    Quotes: {
-                        create: quote
+app.get("/:key", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    if (req.params.key) {
+        const data = yield prisma.user.findMany({
+            where: {
+                OR: [
+                    {
+                        name: {
+                            contains: req.params.key,
+                            mode: "insensitive",
+                        },
+                    },
+                    {
+                        email: {
+                            contains: req.params.key,
+                            mode: "insensitive",
+                        },
                     }
-                }
-            });
-            console.log('Created author and then the related quote');
-            return res.json({ message });
-        }
-        yield prisma.quote.create({
-            data: {
-                quote: quote.quote,
-                author: { connect: { name: authorName } }
-            }
+                ],
+            },
         });
-        console.log('Created quote for an existing author');
-        return res.json({ message });
+        console.log(data);
+        res.json(data);
     }
-    catch (e) {
-        console.error(e);
-        return res.status(500).json({ message: 'something went wrong' });
-    }
+    return;
 }));
-app.listen(port, () => {
+app.listen(port, () => __awaiter(void 0, void 0, void 0, function* () {
     console.log(`⚡️[server]: Server is running at http://localhost:${port}`);
-});
+}));
 //# sourceMappingURL=index.js.map
